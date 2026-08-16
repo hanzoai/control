@@ -1,0 +1,30 @@
+{
+    "name": "@hanzo/control",
+    "version": "0.1.0",
+    "description": "The Hanzo control tool \u2014 one launcher on a site: appearance, language, help, and suggest or edit the page you are on.",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hanzoai/control.git"
+    },
+    "type": "module",
+    "files": [
+        "src",
+        "README.md"
+    ],
+    "exports": {
+        ".": "./src/control.js"
+    },
+    "scripts": {
+        "check": "node --check src/control.js"
+    },
+    "keywords": [
+        "hanzo",
+        "widget",
+        "appearance",
+        "help",
+        "edit",
+        "suggest"
+    ],
+    "sideEffects": true
+}
