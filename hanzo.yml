@@ -1,0 +1,15 @@
+# Canonical CI config for hanzoai/control — the one file ci.hanzo.ai reads.
+#
+# GATE ONLY, and no `images:`. This repo ships one dependency-free file to npm;
+# the sites that use it copy those bytes into their own `public/` at install and
+# before build (hanzo.app does this today), so there is nothing here to put in a
+# container and no second place a version could come from.
+#
+# The gate is what the artifact actually has to survive. There is no build step
+# and no bundler: `src/control.js` is served to a browser byte-for-byte, which
+# means a syntax error reaches every embedding site at once and shows up as a
+# widget that silently never mounts. `node --check` is the whole contract that
+# matters here, and it is honest about being that rather than dressed up as a
+# test suite that asserts nothing.
+test:
+  - node --check src/control.js
