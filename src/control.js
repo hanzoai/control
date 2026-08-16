@@ -345,6 +345,46 @@
   // A short ring buffer of recent route events, captured from load. Degrades to
   // just the initial view when the page never client-navigates.
   var USAGE = [];
+  // What this widget reports about ITSELF, and nothing else.
+  //
+  // Pageviews and autocapture belong to @hanzo/event, the one telemetry client a
+  // page runs. This widget is a script tag and cannot reach that client -- it is
+  // a module the app holds -- so if it reported a pageview there would be two
+  // clients counting the same load through the same door, which is exactly the
+  // defect a second hz.js tag already caused: every pageview counted twice.
+  //
+  // So the rule is not "coordinate with the other client", it is "never emit an
+  // event another client also emits". These are named for the widget and emitted
+  // by nothing else, so the two planes cannot overlap and there is no shared
+  // transport to keep in step.
+  //
+  // Same door as the recordings (`insights.hanzo.ai`), same publishable key, same
+  // opt-out: a reader who declined measurement is not measured here either.
+  function report(name, props) {
+    try {
+      if (!REPLAY.key || replayOptedOut()) return;
+      var sid = sessionId();
+      fetch(REPLAY.host + '/v1/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'omit',
+        body: JSON.stringify({
+          api_key: REPLAY.key,
+          event: 'controls_' + name,
+          distinct_id: sid,
+          properties: Object.assign(
+            { $session_id: sid, $lib: 'hanzo-control', route: location.pathname },
+            props || {},
+          ),
+        }),
+      }).catch(function () {
+        /* telemetry must never surface on the page being measured */
+      });
+    } catch (e) {
+      /* nor throw on it */
+    }
+  }
+
   function pushUsage(kind) {
     try {
       USAGE.push({ t: Date.now(), route: location.pathname + location.search, kind: kind });
@@ -1257,6 +1297,7 @@
     var effectivePath = (path || '').trim() || (CTX.candidates[0] && CTX.candidates[0].path) || PATH || '';
 
     if (action === 'suggest') {
+      report('suggested');
       var payload = editPayload(effectivePath);
       payload.suggestion = text;
       busy('Sending…');
@@ -1285,6 +1326,7 @@
       return;
     }
 
+    report('edited', { mode: mode });
     postEdit(text, effectivePath, mode);
   }
 
@@ -1560,6 +1602,7 @@
   }
 
   function open() {
+    report('opened');
     panel.classList.add('open');
     fab.style.display = 'none';
     CTX.chosen = '';

@@ -115,6 +115,27 @@ settings and a visitor reading the panel are talking about the same thing.
 serve `control.js` from `api.hanzo.ai` and it calls `api.hanzo.ai`. The routes used are
 `/v1/edit`, `/v1/suggest`, `/v1/me`, `/v1/register` and `/v1/s`.
 
+## What it reports
+
+Three events, to `/v1/event` at `insights.hanzo.ai`, with the page's publishable key
+and the same opt-out the recordings honour:
+
+| event                | when                          |
+| -------------------- | ----------------------------- |
+| `controls_opened`    | the panel opens               |
+| `controls_suggested` | a suggestion is filed         |
+| `controls_edited`    | an edit is submitted          |
+
+**It never emits a pageview.** Pageviews and autocapture belong to `@hanzo/event`, the
+one telemetry client a page runs. This widget is a script tag and cannot reach that
+client, because it is a module the app holds. If it reported a pageview there would be
+two clients counting the same load through the same door, which is the defect a second
+`hz.js` tag already caused: every pageview counted twice.
+
+So the rule is not to coordinate with the other client. It is to never emit an event
+another client also emits. These three are named for the widget and emitted by nothing
+else, so there is no overlap to reconcile and no shared transport to keep in step.
+
 ## Panes
 
 The launcher opens one panel and the panel shows one pane at a time. Suggest an edit and
