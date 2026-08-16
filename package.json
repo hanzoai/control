@@ -10,7 +10,8 @@
     "type": "module",
     "files": [
         "src",
-        "README.md"
+        "README.md",
+        "LICENSE"
     ],
     "exports": {
         ".": "./src/control.js"
