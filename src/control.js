@@ -821,6 +821,21 @@
     '.btn.sec{flex:0 0 auto;background:transparent;color:var(--hz-dim);border:1px solid var(--hz-line);font-weight:500}' +
     '.btn.sec:hover{background:var(--hz-field);color:var(--hz-text)}' +
     '.note{font-size:11px;color:var(--hz-dim);margin-top:9px}' +
+    // Help and preferences share the panel with the form, under one rule each.
+    // A reader in the corner of a page wants a way out and a way to make it
+    // readable; two more bubbles would ask them to guess which held which.
+    '.sect{border-top:1px solid var(--hz-line);margin-top:12px;padding-top:10px}' +
+    '.sect h3{font-size:11px;font-weight:500;color:var(--hz-dim);margin:0 0 4px}' +
+    '.hlink{display:flex;align-items:center;justify-content:flex-start;gap:6px;' +
+    'min-height:32px;font-size:13px;color:var(--hz-text);text-decoration:none}' +
+    '.hlink svg{opacity:.5}.hlink:hover svg{opacity:.9}' +
+    '.prow{display:flex;align-items:center;justify-content:space-between;gap:10px;' +
+    'min-height:34px;font-size:13px}' +
+    '.trk{display:inline-flex;align-items:center;gap:2px;padding:2px;border-radius:999px;' +
+    'background:var(--hz-soft,rgba(255,255,255,.06))}' +
+    '.opt{height:22px;padding:0 8px;border:0;border-radius:999px;background:transparent;' +
+    'color:var(--hz-dim);font-size:11px;font-family:var(--hz-font);cursor:pointer}' +
+    '.opt[data-on]{background:rgba(255,255,255,.10);color:var(--hz-text)}' +
     '.link{color:var(--hz-accent);text-decoration:none}' +
     '.link:hover{text-decoration:underline}' +
     '.msg{font-size:13px;line-height:1.5;word-break:break-word}' +
@@ -937,6 +952,115 @@
     return { label: 'Sign in to suggest', action: 'login', login: true };
   }
 
+  // ---- Help and preferences -------------------------------------------------
+  //
+  // The knobs are @hanzo/design's, and so is the transform that produces them:
+  // `vars(pref)` is imported from the vendored `preference.js` rather than
+  // restated here. That module is the one place density 'compact' means 0.85
+  // and a face resolves to var(--font-serif); a widget with its own copy is the
+  // drift @hanzo/design's docblock already records once.
+  //
+  // The knobs land on the HOST page's <html>, not in this shadow root — the
+  // reader is adjusting the page they are reading, and the root is where every
+  // ramp reads them from.
+  var PREF_KEY = 'hanzo.appearance'; // @hanzo/appearance exports this as KEY
+  var VARS = null; // resolved transform, or null until it arrives
+
+  var PREF_ROWS = [
+    { axis: 'type', label: 'Text size', opts: [['S', 0.9], ['M', 1], ['L', 1.15], ['XL', 1.3]] },
+    { axis: 'ratio', label: 'Scale', opts: [['Flat', 0.85], ['Default', 1], ['Airy', 1.2]] },
+    { axis: 'density', label: 'Spacing', opts: [['Tight', 'compact'], ['Default', 'default'], ['Roomy', 'comfortable']] },
+    { axis: 'font', label: 'Font', opts: [['Sans', 'default'], ['System', 'system'], ['Serif', 'serif'], ['Mono', 'mono']] },
+    { axis: 'width', label: 'Width', opts: [['Narrow', 'narrow'], ['Default', 'default'], ['Wide', 'wide']] },
+  ];
+
+  // Every property vars() can emit. The removal list has to be exhaustive or
+  // clearing an axis leaves its last value stuck on the page.
+  var PREF_KNOBS = ['--type-scale', '--type-ratio', '--density', '--font-sans',
+    '--container-max', '--container-prose', '--container-wide', '--primary', '--accent'];
+
+  function readPref() {
+    try {
+      var raw = window.localStorage.getItem(PREF_KEY);
+      var p = raw ? JSON.parse(raw) : {};
+      return p && typeof p === 'object' ? p : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function applyPref(p) {
+    if (!VARS) return;
+    var out = VARS(p);
+    var st = document.documentElement.style;
+    for (var i = 0; i < PREF_KNOBS.length; i++) {
+      var k = PREF_KNOBS[i];
+      // An axis nobody set is REMOVED, never written as a neutral: an inline
+      // property outranks every stylesheet, so a neutral 1 would silently
+      // override a brand that published its own scale.
+      if (out[k]) st.setProperty(k, out[k]);
+      else st.removeProperty(k);
+    }
+  }
+
+  function setPref(axis, value) {
+    var p = readPref();
+    p[axis] = value;
+    try {
+      window.localStorage.setItem(PREF_KEY, JSON.stringify(p));
+    } catch (e) {
+      /* storage can be blocked; the page still updates for this visit */
+    }
+    applyPref(p);
+    return p;
+  }
+
+  function helpHtml() {
+    var out = '<a class="hlink" href="' + BASE + '/docs" target="_blank" rel="noopener">Docs' + OUTLINK + '</a>';
+    out += '<a class="hlink" href="' + BASE + '/support" target="_blank" rel="noopener">Get help' + OUTLINK + '</a>';
+    out += '<a class="hlink" href="' + BASE + '/contact" target="_blank" rel="noopener">Contact us' + OUTLINK + '</a>';
+    return '<div class="sect"><h3>Help</h3>' + out + '</div>';
+  }
+
+  var OUTLINK =
+    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>';
+
+  function prefsHtml() {
+    // Nothing is offered until the transform is here — a control that cannot
+    // apply its own value is worse than one that is not shown yet.
+    if (!VARS) return '';
+    var p = readPref();
+    var rows = PREF_ROWS.map(function (r) {
+      var cur = p[r.axis];
+      var opts = r.opts
+        .map(function (o) {
+          var on = cur === undefined ? o[1] === 1 || o[1] === 'default' : cur === o[1];
+          return (
+            '<button type="button" class="opt"' + (on ? ' data-on' : '') +
+            ' data-axis="' + r.axis + '" data-val="' + esc(String(o[1])) + '">' + esc(o[0]) + '</button>'
+          );
+        })
+        .join('');
+      return '<div class="prow"><span>' + esc(r.label) + '</span><span class="trk">' + opts + '</span></div>';
+    }).join('');
+    return '<div class="sect"><h3>Preferences</h3>' + rows + '</div>';
+  }
+
+  function wirePrefs(root) {
+    var btns = root.querySelectorAll('.opt[data-axis]');
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].onclick = function () {
+        var axis = this.getAttribute('data-axis');
+        var raw = this.getAttribute('data-val');
+        // A numeric axis stores a number; a named one stores its word.
+        var val = axis === 'type' || axis === 'ratio' ? parseFloat(raw) : raw;
+        setPref(axis, val);
+        renderForm();
+      };
+    }
+  }
+
   function renderForm() {
     var c = cta();
     var showPath = c.action === 'edit';
@@ -1011,8 +1135,11 @@
       (CTX.candidates.length ? ' · ' + CTX.candidates.length + ' candidate file' + (CTX.candidates.length > 1 ? 's' : '') : '') +
       (CTX.version ? ' · v' + esc(CTX.version) : '') +
       '</div>' +
+      helpHtml() +
+      prefsHtml() +
       '</div>';
 
+    wirePrefs(panel);
     panel.querySelector('.x').onclick = close;
     var ta = panel.querySelector('textarea');
     var pathInput = panel.querySelector('.path');
@@ -1469,6 +1596,23 @@
       /* registration is a convenience — never blocks editing */
     });
   }
+
+  // The preference transform, from @hanzo/design via hanzo.app. Cross-origin, so
+  // /vendor/appearance/* carries Access-Control-Allow-Origin (next.config.ts) —
+  // without it the import rejects and the section simply never appears, which is
+  // the honest degradation: the widget's other jobs are unaffected.
+  import(BASE + '/vendor/appearance/preference.js')
+    .then(function (m) {
+      if (m && typeof m.vars === 'function') {
+        VARS = m.vars;
+        // Apply what this device already chose, then let an open panel show it.
+        applyPref(readPref());
+        if (panel && panel.classList.contains('open')) renderForm();
+      }
+    })
+    .catch(function () {
+      /* no transform, no preferences section — every other capability stands */
+    });
 
   // Probe identity to shape the CTA. It fails CLOSED to the signed-out state,
   // which is now the honest one: the door refuses an unnamed suggestion, so a
