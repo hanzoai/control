@@ -1,0 +1,55 @@
+name: Publish
+
+# Publishing is the runner's job, not a laptop's. This file is the ONLY thing
+# here allowed to reach npmjs.
+#
+# No `paths:` filter, deliberately, and the reasoning is hanzoai/ui's, learned
+# there twice: the question is "does npmjs serve something older than this tree?"
+# and the registry comparison below is the only thing that reads the truth. A
+# path gate in front of it guesses from the shape of a diff, and a lockfile-only
+# fix to a failed release then matches no path and cannot re-run the job it
+# repaired. With no gate this is idempotent by construction — it publishes what
+# is ahead of npmjs and nothing when nothing is — which is also what makes the
+# manual dispatch safe.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: hanzo-build-linux-amd64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      # There is no build: src/control.js is served to a browser byte-for-byte.
+      # A syntax error would reach every embedding site at once and read as a
+      # widget that silently never mounts, so this runs before the version is
+      # immutable rather than after.
+      - run: node --check src/control.js
+
+      - name: Publish if the tree is ahead of npmjs
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          NAME=$(jq -r .name package.json)
+          NEW=$(jq -r .version package.json)
+          OLD=$(curl -sf "https://registry.npmjs.org/${NAME}" \
+                  | jq -r '."dist-tags".latest // "0.0.0"' 2>/dev/null || echo "0.0.0")
+
+          # FORWARD ONLY. `!=` fires in both directions, and a revert would walk
+          # the registry backwards; only a strictly greater local version is a
+          # release. Asking the registry rather than the previous commit also
+          # survives a merge whose first parent already carries the bump.
+          NEWEST=$(printf '%s\n%s\n' "$OLD" "$NEW" | sort -V | tail -1)
+          if [ "$OLD" = "$NEW" ] || [ "$NEWEST" != "$NEW" ]; then
+            echo "npmjs serves $OLD; tree is $NEW — nothing to publish."
+            exit 0
+          fi
+          echo "Publishing $NAME $OLD -> $NEW"
+          npm publish --access public
