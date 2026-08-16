@@ -774,10 +774,9 @@
     // reflows content or competes with the page's own controls.
     //
     // The mark IS the button: no disc, no plate, no shadow. It is the canonical
-    // Enso brush ring (see ENSO below) — one thick weight, monochrome and quiet
-    // until touched, then the SAME ring lights white over a soft, slowly-turning
-    // halo. One ring, one weight, in both states — no hairline, no handover to a
-    // second ring.
+    // Hanzo H (see MARK below) — monochrome and quiet until touched, then the
+    // SAME glyph lights white over a soft, slowly-turning halo. One glyph in both
+    // states, with nothing handed over to a second shape.
     //
     // --mark is the DRAWN diameter and the only size to change; the halo sizes
     // itself from it.
@@ -929,15 +928,23 @@
   // (no `vector-effect`), like every other place this glyph is drawn: at the
   // 18px dock size it lands ~2px, a bold little brush ring — the weight the mark
   // is meant to have, not the thin hairline it briefly wore.
-  var ENSO =
-    '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">' +
-    '<circle cx="12" cy="12" r="8.88" fill="none" stroke="currentColor" stroke-width="2.64" stroke-linecap="round"/></svg>';
+  // The H, the same five paths @hanzogui/shell draws. The glyph is the
+  // assistant's across every surface -- the header says the name instead -- so a
+  // reader learns one shape in one corner rather than meeting it in two places
+  // meaning two things.
+  var MARK =
+    '<svg viewBox="0 0 67 67" xmlns="http://www.w3.org/2000/svg" fill="currentColor" aria-hidden="true" focusable="false">' +
+    '<path d="M22.21 67V44.6369H0V67H22.21Z"/>' +
+    '<path d="M66.7038 22.3184H22.2534L0.0878906 44.6367H44.4634L66.7038 22.3184Z"/>' +
+    '<path d="M22.21 0H0V22.3184H22.21V0Z"/>' +
+    '<path d="M66.7198 0H44.5098V22.3184H66.7198V0Z"/>' +
+    '<path d="M66.7198 67V44.6369H44.5098V67H66.7198Z"/></svg>';
 
   var fab = document.createElement('button');
   fab.className = 'fab';
   fab.setAttribute('aria-label', 'Ask or edit this page');
   fab.setAttribute('title', 'Ask or edit this page');
-  fab.innerHTML = ENSO;
+  fab.innerHTML = MARK;
   root.appendChild(fab);
 
   var panel = document.createElement('div');
