@@ -1,7 +1,7 @@
 {
     "name": "@hanzo/control",
     "version": "0.1.0",
-    "description": "The Hanzo control tool \u2014 one launcher on a site: appearance, language, help, and suggest or edit the page you are on.",
+    "description": "Hanzo Control \u2014 the controls surface for Hanzo apps and websites: appearance, language, help, and suggesting or editing the page you are viewing.",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -20,11 +20,12 @@
     },
     "keywords": [
         "hanzo",
-        "widget",
+        "controls",
         "appearance",
+        "language",
         "help",
-        "edit",
-        "suggest"
+        "suggest",
+        "edit"
     ],
     "sideEffects": true
 }
