@@ -38,11 +38,11 @@ jobs:
           KMS_CLIENT_ID: ${{ secrets.KMS_CLIENT_ID }}
           KMS_CLIENT_SECRET: ${{ secrets.KMS_CLIENT_SECRET }}
         run: |
-          # Only the KMS machine identity lives as a forge secret. A registry
+          # Only the KMS machine identity lives as an Actions secret. A registry
           # token beside it would be a second home for one thing, and the one
           # that rots unwatched — nothing reads it until a release day.
           if [ -z "${KMS_CLIENT_ID:-}" ] || [ -z "${KMS_CLIENT_SECRET:-}" ]; then
-            echo "::error::KMS machine identity absent — cannot pull the npm credential. Seed KMS_CLIENT_ID/KMS_CLIENT_SECRET as git.hanzo.ai Actions secrets (org or repo scope)." >&2
+            echo "::error::KMS machine identity absent — cannot pull the npm credential. Seed KMS_CLIENT_ID/KMS_CLIENT_SECRET as Hanzo Git Actions secrets (org or repo scope)." >&2
             exit 1
           fi
           KMS=https://kms.hanzo.ai; ENVN=prod
@@ -54,7 +54,7 @@ jobs:
           CODE=$(printf '%s' "$BODY" | tail -1)
           NODE_AUTH_TOKEN=$(printf '%s' "$BODY" | sed '$d' | jq -r '.value // empty' 2>/dev/null || true)
           if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "::error::KMS returned HTTP $CODE for $URL with no value — seed NPM_TOKEN there, not as a forge secret." >&2
+            echo "::error::KMS returned HTTP $CODE for $URL with no value — seed NPM_TOKEN there, not as an Actions secret." >&2
             exit 1
           fi
           echo "::add-mask::$NODE_AUTH_TOKEN"
