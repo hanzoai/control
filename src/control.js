@@ -726,9 +726,9 @@
   //
   // Custom properties cross the shadow boundary: they are inherited, and `all`
   // does NOT reset them, so `:host{all:initial}` isolates this tree from the
-  // page's own rules while `--background`, `--brand-accent`, `--font-geist-sans`
+  // page's own rules while `--background`, `--brand-accent`, `--font-sans`
   // and the rest still arrive intact. (Measured on hanzo.app: --brand-accent
-  // reads #8b5cf6 and --font-geist-sans reads "Geist" from inside this root.)
+  // reads #8b5cf6 and --font-sans reads "Zen" from inside this root.)
   // Adopting the page's stylesheets would be the wrong tool anyway — this script
   // is dropped into OTHER Hanzo apps cross-origin, where the only contract that
   // can be relied on is the token names.
@@ -737,8 +737,8 @@
   // ships no token layer at all renders exactly what it rendered before.
   var TOKENS =
     ':host{all:initial;' +
-    '--hz-font:var(--font-geist-sans,var(--font-sans,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif));' +
-    '--hz-mono:var(--font-geist-mono,var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace));' +
+    '--hz-font:Zen, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;' +
+    '--hz-mono:var(--font-mono,var(--font-mono,ui-monospace,SFMono-Regular,Menlo,monospace));' +
     // Purple is the ONE accent in this system. The widget used to draw a stray
     // #8ab4ff blue — links, the admin chip, the chosen candidate, the
     // inline-edit outline — which belongs to no palette here.
@@ -768,7 +768,7 @@
 
   var css =
     TOKENS +
-    '*{box-sizing:border-box;font-family:var(--hz-font)}' +
+    '*{box-sizing:border-box;font-family:Zen, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif}' +
     // The trigger is the ensō mark alone — one affordance for every AI action
     // on the page (ask, edit, suggest). It lights rather than grows, so it never
     // reflows content or competes with the page's own controls.
@@ -841,10 +841,10 @@
     'border:1px solid var(--hz-line);border-radius:var(--hz-radius);padding:9px 10px;font-size:13px;outline:none}' +
     'textarea:focus{border-color:var(--hz-accent)}' +
     'input.path{width:100%;margin-top:8px;background:var(--hz-field);color:var(--hz-text);border:1px solid var(--hz-line);' +
-    'border-radius:var(--hz-radius);padding:8px 10px;font-size:12px;font-family:var(--hz-mono);outline:none}' +
+    'border-radius:var(--hz-radius);padding:8px 10px;font-size:12px;font-family:Zen Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;outline:none}' +
     'input.path:focus{border-color:var(--hz-accent)}' +
     '.cands{margin-top:7px;display:flex;flex-wrap:wrap;gap:6px}' +
-    '.cand{font-family:var(--hz-mono);font-size:11px;color:var(--hz-dim);background:var(--hz-field);' +
+    '.cand{font-family:Zen Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;font-size:11px;color:var(--hz-dim);background:var(--hz-field);' +
     'border:1px solid var(--hz-line);border-radius:6px;padding:3px 7px;cursor:pointer;max-width:100%;overflow:hidden;' +
     'text-overflow:ellipsis;white-space:nowrap}' +
     '.cand:hover{border-color:var(--hz-accent);color:var(--hz-text)}' +
@@ -873,7 +873,7 @@
     '.trk{display:inline-flex;align-items:center;gap:2px;padding:2px;border-radius:999px;' +
     'background:var(--hz-soft,rgba(255,255,255,.06))}' +
     '.opt{height:22px;padding:0 8px;border:0;border-radius:999px;background:transparent;' +
-    'color:var(--hz-dim);font-size:11px;font-family:var(--hz-font);cursor:pointer}' +
+    'color:var(--hz-dim);font-size:11px;font-family:Zen, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;cursor:pointer}' +
     '.opt[data-on]{background:rgba(255,255,255,.10);color:var(--hz-text)}' +
     '.link{color:var(--hz-accent);text-decoration:none}' +
     '.link:hover{text-decoration:underline}' +
@@ -882,13 +882,13 @@
     // Admin review: the proposed-change diff before a live commit. Added/removed
     // lines stay green/red — that is semantics, not chrome.
     '.diff{margin-top:10px;max-height:38vh;overflow:auto;background:var(--hz-field);border:1px solid var(--hz-line);' +
-    'border-radius:var(--hz-radius);padding:8px 10px;font-family:var(--hz-mono);font-size:11px;' +
+    'border-radius:var(--hz-radius);padding:8px 10px;font-family:Zen Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;font-size:11px;' +
     'line-height:1.45;white-space:pre;tab-size:2}' +
     '.diff .a{color:#7ee787;background:rgba(46,160,67,.12);display:block}' +
     '.diff .d{color:#ff9d9d;background:rgba(248,81,73,.12);display:block}' +
     '.diff .c{color:var(--hz-dim);display:block}' +
     '.warn{font-size:11px;color:#e3b341;margin-top:9px}' +
-    'code{font-family:var(--hz-mono);font-size:11px;background:var(--hz-field);' +
+    'code{font-family:Zen Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;font-size:11px;background:var(--hz-field);' +
     'border:1px solid var(--hz-line);border-radius:5px;padding:1px 5px}' +
     // Admin affordances: the "admin" chip + the ghost inline-edit button.
     '.adm{color:var(--hz-accent);font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:10px}' +
@@ -1004,7 +1004,7 @@
   // The knobs are @hanzo/design's, and so is the transform that produces them:
   // `vars(pref)` is imported from the vendored `preference.js` rather than
   // restated here. That module is the one place density 'compact' means 0.85
-  // and a face resolves to var(--font-serif); a widget with its own copy is the
+  // and a face resolves to var(--font-sans); a widget with its own copy is the
   // drift @hanzo/design's docblock already records once.
   //
   // The knobs land on the HOST page's <html>, not in this shadow root — the
